@@ -23,7 +23,6 @@ xSemaphoreHandle xBinarySemaphore3;  //Passenger down semaphore
 xSemaphoreHandle xBinarySemaphore4;  //Driver up semaphore
 xSemaphoreHandle xBinarySemaphore5;  //Driver down semaphore
 xSemaphoreHandle xBinarySemaphore6;  //Lock semaphore
-int Locked=0;
 
 void PassengerUp (void *pvParameters);
 void PassengerDown (void *pvParameters);
@@ -166,24 +165,27 @@ void Jamming(void * pvParameters){
 	Motor_Control(2);
 	Delay_ms(2000);
 	vTaskDelayUntil( &xLastWakeTime, ( 5000 / portTICK_RATE_MS ) );
-	NVIC_EN0_R |= (1<<4);          /*Enable PORTE Interrupt IRQ4 */
   // stop
   Motor_Control(0);		
 	}
 }
 void Lock (void *pvParameters)
 {
-	
-	xSemaphoreTake(xBinarySemaphore6 ,0);
+	xSemaphoreTake(xBinarySemaphore6 , 0);
 	for(;;){
-		NVIC_EN0_R &=~ (1<<0);        /*Disable PORTA Interrupt IRQ0 */
-		xSemaphoreTake(xBinarySemaphore6 ,portMAX_DELAY);
-		if(ReadPin(&GPIO_PORTF_DATA_R,1 )==0x00)
-			Locked =0;   //enable passenger panel
-		else if(ReadPin(&GPIO_PORTF_DATA_R,1)==0x01)
-			Locked =1;   //disable passenger panel
-		NVIC_EN0_R |= (1<<0);        /*Enable PORTA Interrupt IRQ0 */
-	} 
+		xSemaphoreTake(xBinarySemaphore6 , portMAX_DELAY);
+		if(ReadPin(&GPIO_PORTF_DATA_R , 1)==0x01){
+			while(ReadPin(&GPIO_PORTF_DATA_R , 1)==0x01){
+					NVIC_EN0_R &=~ (1<<0);        //Disable PORTA Interrupt IRQ0 
+			}
+		}
+		else{
+			NVIC_EN0_R |= (1<<0);        //Enable PORTA Interrupt IRQ0 
+		}
+	
+	GPIO_PORTE_ICR_R |= 1<<2;
+	}
+
 }
 
 void GPIOE_Handler (void)
