@@ -207,21 +207,17 @@ void GPIOE_Handler (void)
 void GPIOA_Handler(void){
 		portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE; 
 	 if (Get_Bit(GPIO_PORTA_MIS_R , 5))          //if PASSENGER_UP is pressed
-	{ 
-		if(Locked==0){
+	{
 		xSemaphoreGiveFromISR(xBinarySemaphore2,&xHigherPriorityTaskWoken);
 		GPIO_PORTA_ICR_R |= 1<<5;
 		portEND_SWITCHING_ISR( xHigherPriorityTaskWoken ); 
-	}		
-}
+	}	
 	else if (Get_Bit(GPIO_PORTA_MIS_R , 6))          //if PASSENGER_DOWN is pressed
 	{ 
-		if(Locked==0){
 		xSemaphoreGiveFromISR(xBinarySemaphore3,&xHigherPriorityTaskWoken);
 		GPIO_PORTA_ICR_R |= 1<<6;
 		portEND_SWITCHING_ISR( xHigherPriorityTaskWoken ); 
 	}
-}
 }	
 void GPIOF_Handler()
 {
